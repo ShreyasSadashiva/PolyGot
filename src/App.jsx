@@ -3,14 +3,38 @@ import OpenAI from "openai";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
+import axios from "axios";
+
 import "./App.css";
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_AI_KEY,
-  baseURL: import.meta.env.VITE_AI_URL,
-  dangerouslyAllowBrowser: true,
-});
 function App() {
+  const apiCall = () => {
+    axios
+      .post("http://localhost:8080", {
+        messages: [
+          {
+            role: "system",
+            content: `Translate the following text to spanish. 
+        Provide the right phonetic pronunciation for each word in English by breaking the words down into simple and common English syllables.
+        Some rules:
+        - Always format each section with proper headings
+        - Each phonetic pronunciation should have its own line
+        - When I say phonetics I don't mean the IPA symbols, I mean the English spelling of how to pronounce the word in the specified language
+        `,
+          },
+          {
+            role: "user",
+            content: query,
+          },
+        ],
+      })
+      .then((response) => {
+        console.log(response.data);
+        const html = marked.parse(response.data);
+        const safeHTML = DOMPurify.sanitize(html);
+        setResult(safeHTML);
+      });
+  };
   useEffect(() => {}, []);
 
   const [query, setQuerey] = useState("");
@@ -19,29 +43,6 @@ function App() {
 
   const onClickHandler = async () => {
     console.log(query);
-    const response = await openai.chat.completions.create({
-      model: import.meta.env.VITE_AI_MODEL,
-      messages: [
-        {
-          role: "system",
-          content: `Translate the following text to ${lang}. 
-          Provide the right phonetic pronunciattion for each word in english but breaking the words down into simple and common englist syllables.
-          some rules:
-          - Always format each section with proper headings
-          - Each phonetic pronunciation should have it's own line
-          - When i say phonetics i don't mean the IPA symbols, i mean the english spelling of how to pronounce the word in the specified language
-          `,
-        },
-        {
-          role: "user",
-          content: query,
-        },
-      ],
-    });
-    console.log(response.choices[0].message.content);
-    const html = marked.parse(response.choices[0].message.content);
-    const safeHTML = DOMPurify.sanitize(html);
-    setResult(safeHTML);
   };
   return (
     <>
@@ -76,6 +77,8 @@ function App() {
         }}
       />{" "}
       German
+      <button onClick={apiCall}>Make API Call</button>
+      <hr />
       {result && <span>{result}</span>}
     </>
   );
