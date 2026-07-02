@@ -5,6 +5,13 @@ import DOMPurify from "dompurify";
 
 import axios from "axios";
 
+/* Material UI */
+import Button from "@mui/material/Button";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import TextField from "@mui/material/TextField";
+
 import "./App.css";
 
 function App() {
@@ -14,7 +21,7 @@ function App() {
         messages: [
           {
             role: "system",
-            content: `Translate the following text to spanish. 
+            content: `Translate the following text to ${lang}. 
         Provide the right phonetic pronunciation for each word in English by breaking the words down into simple and common English syllables.
         Some rules:
         - Always format each section with proper headings
@@ -47,39 +54,42 @@ function App() {
   return (
     <>
       <h1>polygot</h1>
-      <input
-        type="text"
-        placeholder="Enter text"
+      <TextField
+        id="outlined-multiline-static"
+        label="Enter your Text here"
+        multiline
+        rows={4}
         onChange={(e) => setQuerey(e.target.value)}
       />
-      <button onClick={() => onClickHandler()}>Submit</button>
-      <input
-        type="checkbox"
-        value="French"
-        onClick={() => {
-          setLang("French");
-        }}
-      />{" "}
-      French
-      <input
-        type="checkbox"
-        value="Spanish"
-        onClick={() => {
-          setLang("Spanish");
-        }}
-      />{" "}
-      Spanish
-      <input
-        type="checkbox"
-        value="German"
-        onClick={() => {
-          setLang("German");
-        }}
-      />{" "}
-      German
-      <button onClick={apiCall}>Make API Call</button>
+
+      <FormGroup>
+        <FormControlLabel
+          control={<Checkbox />}
+          label="Spanish"
+          onClick={() => {
+            setLang("Spanish");
+          }}
+        />
+        <FormControlLabel
+          control={<Checkbox />}
+          onClick={() => {
+            setLang("French");
+          }}
+          label="French"
+        />
+        <FormControlLabel
+          control={<Checkbox />}
+          onClick={() => {
+            setLang("German");
+          }}
+          label="German"
+        />
+      </FormGroup>
+      <Button variant="contained" onClick={apiCall}>
+        Make API Call
+      </Button>
       <hr />
-      {result && <span>{result}</span>}
+      {result && <span dangerouslySetInnerHTML={{ __html: result }} />}
     </>
   );
 }
